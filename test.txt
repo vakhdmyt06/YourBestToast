@@ -1,0 +1,88 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <SDL2/SDL.h>
+#include <fstream>
+#include <algorithm>
+
+using namespace std;
+
+// Function to print the contents of a vector
+void print_vector(vector<string> &v) {
+    for (auto it : v) {
+        cout << it << " ";
+    }
+    cout << endl;
+}
+
+// Function to read words from a file and store them in a map
+void read_words(map<string, string> &words) {
+    ifstream fin("words.txt");
+    string line;
+    while (getline(fin, line)) {
+        string first_word = line.substr(0, line.find(' '));
+        string second_word = line.substr(line.find(' ') + 1);
+        words[first_word] = second_word;
+    }
+    fin.close();
+}
+
+int WinMain() {
+    // Initialize variables
+    vector<string> words;
+    map<string, string> word_pairs;
+    string current_word;
+    std::cout << "initializing Mochimator: Vocabulary Trainer" << std::endl;
+
+    // Read words from file and store them in a map
+    read_words(word_pairs);
+
+    // Store all the keys of the map in a vector
+    for (auto it : word_pairs) {
+        words.push_back(it.first);
+    }
+
+    // Set the current word to the first word in the vector
+    current_word = words[0];
+
+    // Create window
+    std::cout << "- create window" << std::endl;
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer);
+
+    // Main loop
+    std::cout << "- enter loop" << std::endl;
+    while (true) {
+        // Render current word
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        SDL_RenderClear(renderer);
+        SDL_RenderPresent(renderer);
+
+        // Get user input
+        SDL_Event e;
+        while (SDL_PollEvent(&e) != 0) {
+            if(e.type == SDL_KEYDOWN) {
+                if(e.key.keysym.sym==SDLK_a){
+                    auto it = find(words.begin(), words.end(), current_word);
+                    if (it != words.begin()) {
+                        current_word = *(--it);
+                    }
+                }
+                if(e.key.keysym.sym==SDLK_d){
+                    auto it = find(words.begin(), words.end(), current_word);
+                    if (it != words.end() - 1) {
+                        current_word = *(++it);
+                    }
+                }
+                if(e.key.keysym.sym==SDLK_RETURN){
+                    cout << word_pairs[current_word] << endl;
+                }
+            }
+        }
+    }
+    std::cout << "- exit" << std::endl;
+
+    return 0;
+}
